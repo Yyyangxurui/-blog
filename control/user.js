@@ -82,6 +82,30 @@ exports.login = async ctx => {
                 status:"密码不正确"
             })
         }
+        //让用户在cookie里面设置username，password，加密后的密码，权限
+        ctx.cookies.set("username",username,{
+            domain: "localhost",
+            path: "/",
+            maxAge: 36e5,
+            httpOnly: true,
+            overwrite: false,
+            signed: true
+        })
+        //数据库_id值
+        ctx.cookies.set("uid",data[0]._id,{
+            domain: "localhost",
+            path: "/",
+            maxAge: 36e5,
+            httpOnly: true,
+            overwrite: false,
+            signed: true
+        })
+        ctx.session = {
+            username,
+            uid: data[0]._id
+        }
+
+
         await ctx.render("isOk",{
             status:"登陆成功"
 
@@ -93,3 +117,26 @@ exports.login = async ctx => {
         })
     })
 }
+//保持用户登录状态
+exports.keepLogin = async (ctx,next) =>{
+    if(ctx.session.isNew){
+        if (ctx.cookies.get("username")) {
+            username: ctx.cookies.get("username")
+            uid: ctx.cookies.get("uid") 
+        }
+    }
+    await next()
+}
+//用户退出
+exports.logout = async ctx => {
+    ctx.session = null
+    ctx.cookies.set("username",null,{
+        maxAge: 0
+    })
+    ctx.cookies.set("uid",null,{
+        maxAge:0
+    })
+    //重新定向首页
+    ctx.redirect("/")
+}
+//文章发表
