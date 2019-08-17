@@ -32,4 +32,10 @@ router.post("/article",user.keepLogin,article.add)
 
 //分页路由
 router.get("/page/:id",article.getList)
+
+//文章详情页路由
+router.get("/article/:id",user.keepLogin,article.details)
+
+//发表评论
+router.post("/comment",user.keepLogin,article.save)
 module.exports = router
