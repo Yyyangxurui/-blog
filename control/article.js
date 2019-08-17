@@ -30,6 +30,7 @@ exports.add = async ctx => {
     const data = ctx.request.body
     //添加文章作者
     data.author = ctx.session.uid
+    data.commentNum = 0
     await new Promise((resolve,reject) => {
         new Article(data).save((err,data) => {
             if (err) return reject(err)
@@ -106,7 +107,7 @@ exports.details = async ctx => {
     }
 
 
-exports.save = async ctx => {
+exports.pinglunsave = async ctx => {
         let message = {
           status: 0,
           msg: "登录才能发表"
@@ -131,6 +132,16 @@ exports.save = async ctx => {
             
             
             // 更新当前文章的评论计数器
+            Article
+                .update({_id: data.article},{$inc:{
+                    commentNum:1}},err => {
+                        if(err)return console.log(err)
+                        console.log("成功技术")
+                    })
+                
+
+
+
         })
             // 更新用户的评论计数器
           .catch(err => {

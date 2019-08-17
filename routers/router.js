@@ -37,5 +37,5 @@ router.get("/page/:id",article.getList)
 router.get("/article/:id",user.keepLogin,article.details)
 
 //发表评论
-router.post("/comment",user.keepLogin,article.save)
+router.post("/comment",user.keepLogin,article.pinglunsave)
 module.exports = router
