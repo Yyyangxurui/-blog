@@ -1,4 +1,4 @@
-//注册模块 koa koa-static koa-views koa-logger koa-body koa-router pug mongoose koa-session
+//注册模块 koa koa-static koa-views koa-logger koa-body koa-router pug mongoose koa-session koa-multer
 const Koa = require('koa')
 const static = require('koa-static')
 const views = require('koa-views')
@@ -43,3 +43,38 @@ app
 app.listen(3000,() => {
     console.log("启动成功")
 })
+
+//创建管理员用户，若存在，返回页面
+{
+const { db } = require('./Schema/connect')
+const UserSchema = require('./Schema/user')
+const User = db.model("users",UserSchema)
+const encrypt = require('./util/encrypt')
+
+
+
+User
+    .find({username:"admin"})
+    .then(data => {
+        if(data.length === 0){
+            //管理员不存在
+            new User({
+                username: "admin",
+                password: encrypt("admin"),
+                role: 666,       
+                articleNum: 0,
+                commentNum:0
+            })
+                .save()
+                .then(data => {
+                    console.log("管理员用户：admin，密码：admin")
+                })
+                .catch(err => {
+                    console.log("管理员登陆失败")
+                })
+        }else{
+            //管理员存在
+            console.log("管理员用户：admin，密码：admin")
+        }
+    })
+}

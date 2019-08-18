@@ -25,7 +25,9 @@ exports.reg = async ctx => {
             //密码在保存数据库之前要先加密，encrypt是自定义的加密模块
              const _user = new User({
                 username,
-                password :encrypt(password)
+                password :encrypt(password),
+                commentNum:0,
+                article:0
             })
 
             _user.save((err,data) =>{
@@ -103,7 +105,8 @@ exports.login = async ctx => {
         ctx.session = {
             username,
             uid: data[0]._id,
-            avatar: data[0].avatar
+            avatar: data[0].avatar,
+            role: data[0].role
         }
 
 
@@ -122,8 +125,16 @@ exports.login = async ctx => {
 exports.keepLogin = async (ctx,next) =>{
     if(ctx.session.isNew){
         if (ctx.cookies.get("username")) {
-            username: ctx.cookies.get("username")
-            uid: ctx.cookies.get("uid") 
+            let uid = ctx.cookies.get("uid") 
+            await User.findById(uid)
+                    .then(data => data.avatar)
+
+
+            ctx.session = {
+            username: ctx.cookies.get("username"),
+            uid,
+            avatar
+            }
         }
     }
     await next()
@@ -140,4 +151,25 @@ exports.logout = async ctx => {
     //重新定向首页
     ctx.redirect("/")
 }
-//文章发表
+//用户头像上传
+exports.upload = async ctx => {
+    const filename = ctx.req.file.filename
+  
+    let data = {}
+  
+    await User.update({_id: ctx.session.uid}, {$set: {avatar: "/avatar/" + filename}}, (err, res) => {
+      if(err){
+        data = {
+          status: 0,
+          message: "上传失败"
+        }
+      }else{
+        data = {
+          status: 1,
+          message: '上传成功'
+        }
+      }
+    })
+    console.log(data)
+    ctx.body =  data
+  }

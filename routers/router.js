@@ -3,6 +3,9 @@ const Router = require('koa-router')
 //拿到控制层操作user集合的逻辑对象
 const user = require('../control/user')
 const article = require('../control/article')
+const admin = require('../control/admin')
+const comment = require('../control/comment')
+const upload = require("../util/upload")
 
 const router = new Router
 
@@ -37,5 +40,17 @@ router.get("/page/:id",article.getList)
 router.get("/article/:id",user.keepLogin,article.details)
 
 //发表评论
-router.post("/comment",user.keepLogin,article.pinglunsave)
+router.post("/comment",user.keepLogin,comment.save)
+
+//后台管理页面 文章|评论|头像
+router.get("/admin/:id",user.keepLogin,admin.index)
+
+//头像上传
+router.post("/upload",user.keepLogin,upload.single("file"),user.upload)
+
+router.get("*",async ctx => {
+    await ctx.render("404",{
+        title:"404"
+    })
+})
 module.exports = router
