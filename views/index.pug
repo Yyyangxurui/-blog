@@ -24,7 +24,7 @@ block contents
           each info in artList
             li
               a.list-face
-                img(src=info.author.avatar alt=info.author)
+                img(src=info.author.avatar, alt=info.author)
               h2
                 a.layui-badge= info.tips
                 a.articlt-title.ellipsis(href=`/article/${info._id}`)= info.title

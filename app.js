@@ -1,80 +1,91 @@
-//注册模块 koa koa-static koa-views koa-logger koa-body koa-router pug mongoose koa-session koa-multer
 const Koa = require('koa')
 const static = require('koa-static')
 const views = require('koa-views')
 const router = require('./routers/router')
 const logger = require('koa-logger')
 const body = require('koa-body')
-const {join} = require('path')
+const { join } = require('path')
 const session = require('koa-session')
-//生成koa实例
+const compress = require('koa-compress')
+
+// 生成 Koa 实例
 const app = new Koa
 
-//session的配置对象CONFIG
-app.keys = ["This is a YXR blog"]
+app.keys = ["this is a YXR Blog"]
 
+// session 的配置对象
 const CONFIG = {
-    key: "Sid",
-    maxAge :63e5,
-    overwriter: true,
-    httpOnly: true,
-    signed: true,
-    rolling: true
-
+  key: "Sid",
+  maxAge: 36e5,
+  overwrite: true,
+  httpOnly: true,
+  // signed: true,
+  rolling: true
 }
-//注册日志模块
+
+// 注册日志模块
 app.use(logger())
-//配置session
-app.use(session(CONFIG,app))
-//配置koa-body 处理 post 请求数据
+
+// 注册资源压缩模块 compress
+app.use(compress({
+  threshold: 2048,
+  flush: require('zlib').Z_SYNC_FLUSH
+}))
+
+// 注册session
+app.use(session(CONFIG, app))
+
+// 配置 koa-body 处理 post 请求数据
 app.use(body())
-//配置静态资源目录
-app.use(static(join(__dirname,"public")))
-//配置视图模板
-app.use(views(join(__dirname,"views"),{
-    extension:"pug"
+
+// 配置静态资源目录
+app.use(static(join(__dirname, "public")))
+
+// 配置视图模板
+app.use(views(join(__dirname, "views"), {
+  extension: "pug"
 }))
 
 
-//注册路由信息
-app
-    .use(router.routes())
-    .use(router.allowedMethods())
-app.listen(3000,() => {
-    console.log("启动成功")
+
+// 注册路由信息
+app.use(router.routes()).use(router.allowedMethods())
+
+app.listen(3000, () => {
+  console.log("项目启动成功，监听3000端口")
 })
 
-//创建管理员用户，若存在，返回页面
+
+// 创建管理员用户 如果管理员用户已经存在 则返回
 {
-const { db } = require('./Schema/connect')
-const UserSchema = require('./Schema/user')
-const User = db.model("users",UserSchema)
-const encrypt = require('./util/encrypt')
+  // admin  admin
+  const { db } = require('./Schema/config')
+  const UserSchema = require('./Schema/user')
+  const encrypt = require('./util/encrypt')
+  const User = db.model("users", UserSchema)
 
-
-
-User
-    .find({username:"admin"})
+  User
+    .find({username: "admin"})
     .then(data => {
-        if(data.length === 0){
-            //管理员不存在
-            new User({
-                username: "admin",
-                password: encrypt("admin"),
-                role: 666,       
-                articleNum: 0,
-                commentNum:0
-            })
-                .save()
-                .then(data => {
-                    console.log("管理员用户：admin，密码：admin")
-                })
-                .catch(err => {
-                    console.log("管理员登陆失败")
-                })
-        }else{
-            //管理员存在
-            console.log("管理员用户：admin，密码：admin")
-        }
+      if(data.length === 0){
+        // 管理员不存在  创建
+        new User({
+          username: "admin",
+          password: encrypt("admin"),
+          role: 666,
+          commentNum: 0,
+          articleNum: 0
+        })
+        .save()
+        .then(data => {
+          console.log("管理员用户名 -> admin,  密码 -> admin")
+        })
+        .catch(err => {
+          console.log("管理员账号检查失败")
+        })
+      }else{
+        // 在控制台输出
+        console.log(`管理员用户名 -> admin,  密码 -> admin`)
+      }
     })
 }

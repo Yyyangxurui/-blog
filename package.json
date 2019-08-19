@@ -1,7 +1,8 @@
 {
   "dependencies": {
-    "koa": "^2.7.0",
+    "koa": "^2.8.1",
     "koa-body": "^4.1.1",
+    "koa-compress": "^3.0.0",
     "koa-logger": "^3.2.1",
     "koa-multer": "^1.0.2",
     "koa-router": "^7.4.0",
